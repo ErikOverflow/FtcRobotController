@@ -31,9 +31,6 @@ package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DcMotorImpl;
-import com.qualcomm.robotcore.hardware.Servo;
-import com.qualcomm.robotcore.util.Range;
 
 /*
  * This file works in conjunction with the External Hardware Class sample called: ConceptExternalHardwareClass.java
@@ -58,7 +55,7 @@ public class RobotHardware {
 
     /* Declare OpMode members. */
     private LinearOpMode myOpMode = null;
-    private DcMotor conveyorMotor = null;
+    private DcMotor wheelMotor = null;
     public RobotHardware(LinearOpMode opmode) {
         myOpMode = opmode;
     }
@@ -70,30 +67,23 @@ public class RobotHardware {
      * All of the hardware devices are accessed via the hardware map, and initialized.
      */
     public void init()    {
-        //Initialize a mock motor here. No hardware needs to be attached for this to work.
-        conveyorMotor = new MockDcMotor();
-        //conveyorMotor = myOpMode.hardwareMap.get(DcMotor.class, "conveyorMotor");
-        conveyorMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        conveyorMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        wheelMotor = new MockDcMotor(myOpMode.telemetry);
+        //frontLeftMotor = myOpMode.hardwareMap.get(DcMotor.class, "conveyorMotor");
+        wheelMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        wheelMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        wheelMotor.setPower(0.7);
         myOpMode.telemetry.addData(">", "Hardware Initialized");
-        myOpMode.telemetry.update();
     }
+/*
 
-    public void setConveyorSpeed(double speed) {
-        conveyorMotor.setPower(speed);
-    }
+ */
 
-    public void brakeConveyor(){
-        conveyorMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        conveyorMotor.setPower(0.0);
-    }
+    /**
+     * Drives the robot at a constant speed, with a turning power
+     *
+     * @param speed    the speed the drive the robot [-1,1], negative = backwards.
+     */
+    public void drive(double speed){
 
-    public void releaseConveyor(){
-        conveyorMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
-        conveyorMotor.setPower(0.0);
-    }
-
-    public double getConveyorPower(){
-        return conveyorMotor.getPower();
     }
 }

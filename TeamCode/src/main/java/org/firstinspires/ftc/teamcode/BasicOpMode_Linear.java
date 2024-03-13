@@ -55,13 +55,9 @@ public class BasicOpMode_Linear extends LinearOpMode {
 
         // run until the end of the match (driver presses STOP)
         while (opModeIsActive()) {
-
-            double input = gamepad1.left_stick_y;
-            robotHardware.setConveyorSpeed(input);
-
+            robotHardware.drive(runtime.seconds()/100 % 1.0);
             // Show the elapsed game time and wheel power.
             telemetry.addData("Status", "Run Time: " + runtime.toString());
-            telemetry.addData("Conveyor Power", "(%.2f)", robotHardware.getConveyorPower());
             telemetry.update();
         }
     }
