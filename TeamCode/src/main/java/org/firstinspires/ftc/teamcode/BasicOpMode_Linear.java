@@ -29,12 +29,17 @@
 
 package org.firstinspires.ftc.teamcode;
 
+import com.acmerobotics.dashboard.FtcDashboard;
+import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
-@TeleOp(name="Basic: Linear OpMode", group="Linear OpMode")
+
+import org.firstinspires.ftc.robotcore.external.Telemetry;
+
+@TeleOp(name="Basic: Linear OpMode", group="Linear")
 public class BasicOpMode_Linear extends LinearOpMode {
 
     // Declare OpMode members.
@@ -44,7 +49,10 @@ public class BasicOpMode_Linear extends LinearOpMode {
 
     @Override
     public void runOpMode() {
-        telemetry.addData("Status", "Initialized");
+        FtcDashboard dashboard = FtcDashboard.getInstance();
+        telemetry = new MultipleTelemetry(telemetry, dashboard.getTelemetry());
+        telemetry.setAutoClear(false);
+        Telemetry.Item status = telemetry.addData("Status", "Initialized");
         telemetry.update();
         RobotHardware robotHardware = new RobotHardware(this);
         robotHardware.init();
@@ -52,13 +60,16 @@ public class BasicOpMode_Linear extends LinearOpMode {
         // Wait for the game to start (driver presses PLAY)
         waitForStart();
         runtime.reset();
-
         // run until the end of the match (driver presses STOP)
         while (opModeIsActive()) {
             robotHardware.drive(runtime.seconds()/100 % 1.0);
             // Show the elapsed game time and wheel power.
-            telemetry.addData("Status", "Run Time: " + runtime.toString());
+            if(runtime.seconds() > 10)
+                status.setValue("Run Time: " + runtime.toString());
+            else
+                status.setValue("Run Time: " + runtime.toString());
             telemetry.update();
         }
+        status.setValue("Done!");
     }
 }

@@ -67,12 +67,11 @@ public class RobotHardware {
      * All of the hardware devices are accessed via the hardware map, and initialized.
      */
     public void init()    {
-        wheelMotor = new MockDcMotor(myOpMode.telemetry);
+        wheelMotor = new MockDcMotor(myOpMode.telemetry, "wheelMotor");
         //frontLeftMotor = myOpMode.hardwareMap.get(DcMotor.class, "conveyorMotor");
         wheelMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         wheelMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        wheelMotor.setPower(0.7);
-        myOpMode.telemetry.addData(">", "Hardware Initialized");
+        wheelMotor.setPower(0.0);
     }
 /*
 
@@ -84,6 +83,6 @@ public class RobotHardware {
      * @param speed    the speed the drive the robot [-1,1], negative = backwards.
      */
     public void drive(double speed){
-
+        wheelMotor.setPower(speed);
     }
 }

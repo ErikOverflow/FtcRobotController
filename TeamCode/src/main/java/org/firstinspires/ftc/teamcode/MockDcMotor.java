@@ -12,10 +12,20 @@ public class MockDcMotor implements DcMotor {
     private ZeroPowerBehavior zeroPowerBehavior = ZeroPowerBehavior.FLOAT;
     private Direction direction = Direction.FORWARD;
     private double power = 0;
-    private RunMode runMode = null;
+    private RunMode runMode = RunMode.RUN_WITHOUT_ENCODER;
+    private String deviceName = null;
     private Telemetry telemetry = null;
+    Telemetry.Item telemetry_zeroPowerBehavior = null;
+    Telemetry.Item telemetry_direction = null;
+    Telemetry.Item telemetry_power = null;
+    Telemetry.Item telemetry_runMode = null;
 
-    public MockDcMotor(Telemetry telemetry) {
+    public MockDcMotor(Telemetry telemetry, String deviceName) {
+        this.deviceName = deviceName;
+        telemetry_zeroPowerBehavior = telemetry.addData(this.getDeviceName() + "_zeroPowerBehavior", this.zeroPowerBehavior.toString());
+        telemetry_direction = telemetry.addData(this.getDeviceName() + "_direction", this.direction.toString());
+        telemetry_power = telemetry.addData(this.getDeviceName() + "_power", this.power);
+        telemetry_runMode = telemetry.addData(this.getDeviceName() + "_runMode", this.runMode.toString());
         this.telemetry = telemetry;
     }
 
@@ -41,8 +51,10 @@ public class MockDcMotor implements DcMotor {
 
     public void setZeroPowerBehavior(ZeroPowerBehavior zeroPowerBehavior) {
         this.zeroPowerBehavior = zeroPowerBehavior;
-        if(telemetry != null)
-            telemetry.addData(this.getDeviceName() + "_zeroPowerBehavior", this.zeroPowerBehavior.toString());
+        if(telemetry_zeroPowerBehavior != null) {
+            telemetry_zeroPowerBehavior.setValue(this.zeroPowerBehavior.toString());
+            telemetry.update();
+        }
     }
 
     public ZeroPowerBehavior getZeroPowerBehavior() {
@@ -73,8 +85,11 @@ public class MockDcMotor implements DcMotor {
 
     public void setMode(RunMode mode) {
         this.runMode = mode;
-        if(telemetry != null)
-            telemetry.addData(this.getDeviceName() + "_runMode", this.runMode.toString());
+        if(telemetry_runMode != null){
+            telemetry_runMode.setValue(this.runMode.name());
+            telemetry.update();
+        }
+
     }
 
     public RunMode getMode() {
@@ -83,18 +98,20 @@ public class MockDcMotor implements DcMotor {
 
     public void setDirection(Direction direction) {
         this.direction = direction;
-        if(telemetry != null)
-            telemetry.addData(this.getDeviceName() + "_direction", this.direction.toString());
+        if(telemetry_direction != null) {
+            telemetry_direction.setValue(this.direction.toString());
+            telemetry.update();
+        }
     }
     public Direction getDirection() {
         return direction;
     }
 
     public void setPower(double power) {
-
         this.power = power;
-        if(telemetry != null)
-            telemetry.addData(this.getDeviceName() + "_power", this.power);
+        if(telemetry_power != null) {
+            telemetry_power.setValue(this.power);
+        }
     }
 
     public double getPower() {
@@ -106,7 +123,7 @@ public class MockDcMotor implements DcMotor {
     }
 
     public String getDeviceName() {
-        return null;
+        return deviceName;
     }
 
     public String getConnectionInfo() {
