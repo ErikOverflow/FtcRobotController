@@ -6,11 +6,10 @@ import android.graphics.Canvas;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
-import com.acmerobotics.dashboard.config.ValueProvider;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
-import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.function.Consumer;
@@ -24,22 +23,20 @@ import org.opencv.android.Utils;
 import org.opencv.core.Mat;
 import org.opencv.core.Core;
 import org.opencv.core.Scalar;
-import org.opencv.imgproc.Imgproc;
-import org.slf4j.helpers.Util;
 
-import java.sql.Array;
 import java.util.concurrent.atomic.AtomicReference;
 
 @Config
-@Autonomous(name="FtcDashboard ColorMasking", group="Linear")
+@TeleOp(name="FtcDashboard ColorMasking", group="Linear")
 public class FtcDashboard_ColorMasking extends LinearOpMode {
     public static boolean MASK_TOGGLE = false;
-    public static Scalar skinColor_low = new Scalar(100,100,100,0);
-    public static Scalar skinColor_high = new Scalar(255,255,255,255);
+    public static Scalar RANGE_LOW = new Scalar(50,50,50,0);
+    public static Scalar RANGE_HIGH = new Scalar(140,140,140,255);
     //Talk Volatile vs AtomicReference, final to make sure it is only initialized once, etc.
     public static class CameraStreamProcessor implements VisionProcessor, CameraStreamSource{
 
         Mat peopleMask = new Mat();
+        private final AtomicReference<Scalar> mean = new AtomicReference<>(new Scalar(0,0,0,0));
         private final AtomicReference<Bitmap> lastFrame = new AtomicReference<>(Bitmap.createBitmap(1,1, Bitmap.Config.RGB_565));
         private final AtomicReference<Bitmap> peopleMaskedFrame = new AtomicReference<>(Bitmap.createBitmap(1,1, Bitmap.Config.RGB_565));
 
@@ -55,6 +52,10 @@ public class FtcDashboard_ColorMasking extends LinearOpMode {
             return lastFrame.get();
         }
 
+        public Scalar getMeanColor(){
+            return mean.get();
+        }
+
         @Override
         public void init(int width, int height, CameraCalibration cameraCalibration) {
             lastFrame.set(Bitmap.createBitmap(width, height, Bitmap.Config.RGB_565));
@@ -62,13 +63,11 @@ public class FtcDashboard_ColorMasking extends LinearOpMode {
 
         @Override
         public Object processFrame(Mat frame, long captureTimeNanos) {
-            Bitmap b = Bitmap.createBitmap(frame.width(), frame.height(), Bitmap.Config.RGB_565);
+            Bitmap b = Bitmap.createBitmap(frame.width(), frame.height(), Bitmap.Config.ARGB_8888);
             Utils.matToBitmap(frame, b);
             lastFrame.set(b);
-            Scalar mean = Core.mean(frame);
-
-
-            Core.inRange(frame, skinColor_low, skinColor_high,peopleMask);
+            mean.set(Core.mean(frame));
+            Core.inRange(frame, RANGE_LOW, RANGE_HIGH,peopleMask);
             Bitmap b_peopleMask = Bitmap.createBitmap(frame.width(), frame.height(), Bitmap.Config.ARGB_8888);
             Utils.matToBitmap(peopleMask, b_peopleMask);
             peopleMaskedFrame.set(b_peopleMask);
@@ -85,8 +84,8 @@ public class FtcDashboard_ColorMasking extends LinearOpMode {
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
         final CameraStreamProcessor processor = new CameraStreamProcessor();
 
-        new VisionPortal.Builder().
-                addProcessor(processor)
+        new VisionPortal.Builder()
+                .addProcessor(processor)
                 .setCamera(hardwareMap.get(WebcamName.class, "Webcam 1"))
                 .build();
         waitForStart();
@@ -97,6 +96,8 @@ public class FtcDashboard_ColorMasking extends LinearOpMode {
             } else{
                 FtcDashboard.getInstance().sendImage(processor.getLastFrame());
             }
+            telemetry.addData("AverageColor: ", processor.getMeanColor().toString());
+            telemetry.update();
             sleep(100);
         }
     }
